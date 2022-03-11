@@ -1,0 +1,239 @@
+---
+title: "Conte Data Analysis"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  html_notebook: default
+---
+Step 1. Read in the data 
+```{r}
+library(readr)
+data1 <- read_csv("/Volumes/klie/data/projects/conte/code/r_analysis/conte_data.csv")
+```
+
+Step 2. Perform z-transform/standardization on data to make variables comparable (adjusts mean and standard deviation). 
+
+```{r}
+library(robustHD)
+data2 <- NULL
+data2$age_mean_c <- standardize(x = data1$age, centerFun = mean, scaleFun = sd)
+hist(data2$age_mean_c)
+data2$sex_mean_c <- standardize(x = data1$sex, centerFun = mean, scaleFun = sd)
+hist(data2$sex_mean_c)
+data2$handedness_mean_c <- standardize(x = data1$handedness, centerFun = mean, scaleFun = sd)
+hist(data2$handedness_mean_c)
+data2$fsiq_mean_c <- standardize(x = data1$fsiq, centerFun = mean, scaleFun = sd)
+hist(data2$fsiq_mean_c)
+data2$eq_mean_c <- standardize(x = data1$eq, centerFun = mean, scaleFun = sd)
+hist(data2$eq_mean_c)
+data2$lins_etiv_mean_c <- standardize(x = data1$lins_etiv, centerFun = mean, scaleFun = sd)
+hist(data2$lins_etiv_mean_c)
+data2$rins_etiv_mean_c <- standardize(x = data1$rins_etiv, centerFun = mean, scaleFun = sd)
+hist(data2$rins_etiv_mean_c)
+data2$lifg_etiv_mean_c <- standardize(x = data1$lifg_etiv, centerFun = mean, scaleFun = sd)
+hist(data2$lifg_etiv_mean_c)
+data2$rifg_etiv_mean_c <- standardize(x = data1$rifg_etiv, centerFun = mean, scaleFun = sd)
+hist(data2$rifg_etiv_mean_c)
+data2$lracc_etiv_mean_c <- standardize(x = data1$lracc_etiv, centerFun = mean, scaleFun = sd)
+hist(data2$lracc_etiv_mean_c)
+data2$rracc_etiv_mean_c <- standardize(x = data1$rracc_etiv, centerFun = mean, scaleFun = sd)
+hist(data2$rracc_etiv_mean_c)
+data2$lvmpfc_etiv_mean_c <- standardize(x = data1$lvmpfc_etiv, centerFun = mean, scaleFun = sd)
+hist(data2$lvmpfc_etiv_mean_c)
+data2$rvmpfc_etiv_mean_c <- standardize(x = data1$rvmpfc_etiv, centerFun = mean, scaleFun = sd)
+hist(data2$rvmpfc_etiv_mean_c)
+```
+
+Step 3. Run linear models 
+
+Independent/Predictor Variable: Empathizing Quotient (x)
+Dependent/Predicted Variable: Cortical Thickness (y)
+Covariates: age, sex, handedness, and fsiq (fsiq included in data fit2 as an exploratory covariate). 
+  Question: In talking with Marco Pipoly, he wondered if instead of using fsiq (a fluid IQ measure), if we should use verbal IQ (a crystalized IQ measure), based on literature findings. https://www.sciencedirect.com/topics/neuroscience/fluid-and-crystallized-intelligence 
+
+General formula = y (dependent variable) ~ x (independent variable) + covariates
+  Data fit 1 formula = thickness ~ eq + age + sex + handedness 
+  Data fit 2 formula = thickness ~ eq + age + sex + handedness + fsiq 
+
+```{r}
+library(lme4)
+library(sjPlot)
+library(jtools)
+library(devtools)
+#library(cli)
+#devtools::install_github("jacob-long/jtools")
+
+#INSULA
+lins_fit1 <- lm(lins_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c, data = data2)
+lins_fit2 <- lm(lins_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c + fsiq_mean_c, data = data2) 
+lins_fit1_table <- tab_model(lins_fit1)
+lins_fit2_table <- tab_model(lins_fit2)
+summ(lins_fit1) 
+summ(lins_fit2)
+
+rins_fit1 <- lm(rins_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c, data = data2)
+rins_fit2 <- lm(rins_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c + fsiq_mean_c, data = data2)
+rins_fit1_table <- tab_model(rins_fit1) 
+rins_fit2_table <-tab_model(rins_fit2)
+summ(rins_fit1) 
+summ(rins_fit2)
+
+#INFERIOR FRONTAL GYRUS
+lifg_fit1 <- lm(lifg_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c, data = data2)
+lifg_fit2 <- lm(lifg_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c + fsiq_mean_c, data = data2)
+lifg_fit1_table <-tab_model(lifg_fit1) 
+lifg_fit2_table <-tab_model(lifg_fit2)
+summ(lifg_fit1) 
+summ(lifg_fit2)
+
+rifg_fit1 <- lm(rifg_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c, data = data2)
+rifg_fit2 <- lm(rifg_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c + fsiq_mean_c, data = data2)
+rifg_fit1_table <-tab_model(rifg_fit1) 
+rifg_fit2_table <-tab_model(rifg_fit2)
+summ(rifg_fit1) 
+summ(rifg_fit2) 
+
+#MEDIAL PREFRONTAL CORTEX REGIONS 
+  #Rostral Anterior Cingulate Cortex
+lracc_fit1 <- lm(lracc_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c, data = data2)
+lracc_fit2 <- lm(lracc_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c + fsiq_mean_c, data = data2)
+lracc_fit1_table <-tab_model(lracc_fit1) 
+lracc_fit2_table <-tab_model(lracc_fit2) 
+summ(lracc_fit1) 
+summ(lracc_fit2)
+
+rracc_fit1 <- lm(rracc_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c, data = data2)
+rracc_fit2 <- lm(rracc_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c + fsiq_mean_c, data = data2)
+rracc_fit1_table <-tab_model(rracc_fit1) 
+rracc_fit2_table <-tab_model(rracc_fit2)
+summ(rracc_fit1) 
+summ(rracc_fit2)
+
+  #ventral medial prefrontal cortex
+lvmpfc_fit1 <- lm(lvmpfc_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c, data = data2)
+lvmpfc_fit2 <- lm(lvmpfc_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c + fsiq_mean_c, data = data2)
+lvmpfc_fit1_table <-tab_model(lvmpfc_fit1) 
+lvmpfc_fit2_table <-tab_model(lvmpfc_fit2)
+summ(lvmpfc_fit1) 
+summ(lvmpfc_fit2)
+
+rvmpfc_fit1 <- lm(rvmpfc_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c, data = data2)
+rvmpfc_fit2 <- lm(rvmpfc_etiv_mean_c ~ 1 + eq_mean_c + age_mean_c + sex_mean_c + handedness_mean_c + fsiq_mean_c, data = data2)
+rvmpfc_fit1_table <-tab_model(rvmpfc_fit1) 
+rvmpfc_fit2_table <-tab_model(rvmpfc_fit2) 
+summ(rvmpfc_fit1) 
+summ(rvmpfc_fit2) 
+```
+Notes from conversation with Marco: 
+Checking for correlations between predictor variables. If VIF is <5, not of concern.Tells if model poorly fitting 
+```{r}
+summ(lins_fit1,vifs=TRUE,pvals=TRUE)
+summ(lins_fit2,vifs=TRUE,pvals=TRUE)
+summ(rins_fit1,vifs=TRUE,pvals=TRUE)
+summ(rins_fit2,vifs=TRUE,pvals=TRUE)
+
+summ(lifg_fit1,vifs=TRUE,pvals=TRUE)
+summ(lifg_fit2,vifs=TRUE,pvals=TRUE)
+summ(rifg_fit1,vifs=TRUE,pvals=TRUE)
+summ(rifg_fit2,vifs=TRUE,pvals=TRUE)
+
+summ(lracc_fit1,vifs=TRUE,pvals=TRUE)
+summ(lracc_fit2,vifs=TRUE,pvals=TRUE)
+summ(rracc_fit1,vifs=TRUE,pvals=TRUE)
+summ(rracc_fit2,vifs=TRUE,pvals=TRUE)
+
+summ(lvmpfc_fit1,vifs=TRUE,pvals=TRUE)
+summ(lvmpfc_fit2,vifs=TRUE,pvals=TRUE)
+summ(rvmpfc_fit1,vifs=TRUE,pvals=TRUE)
+summ(rvmpfc_fit2,vifs=TRUE,pvals=TRUE)
+```
+Step 4. Plotting Results 
+```{r}
+library("ggplot2")
+
+ggplotRegression <- function (fit) {
+
+require(ggplot2)
+
+ggplot(fit$model, aes_string(x = names(fit$model)[2], y = names(fit$model)[1])) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue") +
+  labs(title = paste("Adj R2 = ",signif(summary(fit)$adj.r.squared, 5),
+                     "Intercept =",signif(fit$coef[[1]],5 ),
+                     " Slope =",signif(fit$coef[[2]], 5),
+                     " P =",signif(summary(fit)$coef[2,4], 5)))
+}
+ 
+ggplotRegression(lifg_fit1) + 
+  xlab("Empathizing Quotient") + 
+  ylab("Left Inferior Frontal Gyrus Cortical Thickness")
+
+ggplotRegression(rifg_fit1) + 
+  xlab("Empathizing Quotient") + 
+  ylab("Right Inferior Frontal Gyrus Cortical Thickness")
+
+ggplotRegression(lins_fit1) + 
+  xlab("Empathizing Quotient") + 
+  ylab("Left Insula Cortical Thickness")
+
+ggplotRegression(rins_fit1) + 
+  xlab("Empathizing Quotient") + 
+  ylab("Right Insula Cortical Thickness")
+
+ggplotRegression(lracc_fit1) + 
+  xlab("Empathizing Quotient") + 
+  ylab("Left Rostral Anterior Cingulate Cortex Cortical Thickness")
+
+ggplotRegression(rracc_fit1) + 
+  xlab("Empathizing Quotient") + 
+  ylab("Right Rostral Anterior Cingulate Cortex Cortical Thickness")
+
+ggplotRegression(lvmpfc_fit1) + 
+  xlab("Empathizing Quotient") + 
+  ylab("Left Ventral Medial Prefrontal Cortex Cortical Thickness")
+
+ggplotRegression(rvmpfc_fit1) + 
+  xlab("Empathizing Quotient") + 
+  ylab("Right Ventral Medial Prefrontal Cortex Cortical Thickness")
+```
+
+Quick test to see directionality of age and gender effects on EQ 
+```{r}
+library(lme4)
+library(sjPlot)
+library(jtools)
+library(devtools)
+
+lins_fit3 <- lm(eq_mean_c ~ 1 + age_mean_c + lins_etiv_mean_c + sex_mean_c + handedness_mean_c, data = data2)
+
+lins_fit4 <- lm(eq_mean_c ~ 1 + sex_mean_c + age_mean_c + lins_etiv_mean_c + handedness_mean_c, data = data2)
+
+summ(lins_fit3) 
+summ(lins_fit4)
+
+library("ggplot2")
+
+ggplotRegression <- function (fit) {
+
+require(ggplot2)
+
+ggplot(fit$model, aes_string(x = names(fit$model)[2], y = names(fit$model)[1])) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue") +
+  labs(title = paste("Adj R2 = ",signif(summary(fit)$adj.r.squared, 5),
+                     "Intercept =",signif(fit$coef[[1]],5 ),
+                     " Slope =",signif(fit$coef[[2]], 5),
+                     " P =",signif(summary(fit)$coef[2,4], 5)))
+}
+
+ggplotRegression(lins_fit3) + 
+  xlab("Age") + 
+  ylab("Empathizing Quotient")
+
+ggplotRegression(lins_fit3) + 
+  xlab("Gender") + 
+  ylab("Empathizing Quotient")
+
+```
+
